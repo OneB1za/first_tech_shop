@@ -1,0 +1,53 @@
+
+<table class="table">
+    <tbody>
+    <tr>
+        <td>Диагональ</td>
+        <td>{{ product.diagonal }}</td>
+    </tr>
+    <tr>
+        <td>Дисплей</td>
+        <td>{{ product.display }}</td>
+    </tr>
+    <tr>
+        <td>Разрешение</td>
+        <td>{{ product.resolution }}</td>
+    </tr>
+    <tr>
+        <td>Объем батареи</td>
+        <td>{{ product.accum_volume }}</td>
+    </tr>
+    <tr>
+        <td>Оперативка</td>
+        <td>{{ product.ram }}</td>
+    </tr>
+    {% if product.sd == False %}
+        <tr>
+            <td>Sd карта</td>
+            <td>Нет</td>
+        </tr>
+    {% else %}
+        <tr>
+            <td>Sd карта</td>
+            <td>Есть</td>
+        </tr>
+    {% endif %}
+    {% if product.sd == True %}
+        <tr>
+            <td>Макс объем sd</td>
+            <td>{{ product.sd_volume_max }}</td>
+        </tr>
+    {% endif %}
+    <tr>
+        <td>Разрешение главной камеры</td>
+        <td>{{ product.main_cam_mp }}</td>
+    </tr>
+    <tr>
+        <td>Разрешение фронтальной камеры</td>
+        <td>{{ product.frontal_cam_mp }}</td>
+    </tr>
+    </tbody>
+</table>
+
+
+
