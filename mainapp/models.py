@@ -125,6 +125,8 @@ class Product(models.Model):
 
         super().save(*args, **kwargs)
 
+    def get_model_name(self):
+        return self.__class__.__name__.lower()
 
 class Notebook(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
@@ -139,6 +141,8 @@ class Notebook(Product):
 
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
+
+
 
 
 class Smartphone(Product):
@@ -162,7 +166,6 @@ class Smartphone(Product):
     accum_volume = models.CharField(max_length=255, verbose_name='Объем батареи')
     ram = models.CharField(max_length=255, verbose_name='Оперативка')
     sd = models.BooleanField(default=True, verbose_name='Sd карта')
-    # sd_volume_max = models.CharField(max_length=255, null=True, blank=True, verbose_name='Максимальный объем встраиваемой памяти')
     sd_volume_max = models.CharField(choices=CHOICE_SD_VOLUME_MAX, max_length=40, null=True,
                                      blank=True, verbose_name='Максимальный объем встраиваемой памяти')
     main_cam_mp = models.CharField(max_length=255, verbose_name='Разрешение главной камеры')
@@ -181,7 +184,6 @@ class CartProduct(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    # product = models.ForeignKey(Product, verbose_name='Товар', on_delete=models.CASCADE)
     qty = models.PositiveIntegerField(default=1, verbose_name='Количество')
     final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Итоговая цена')
 
@@ -192,8 +194,10 @@ class CartProduct(models.Model):
         self.final_price = self.qty * self.content_object.price
         super().save(*args, **kwargs)
 
+
+
 class Cart(models.Model):
-    owner = models.ForeignKey('Customer', verbose_name='Владелец', on_delete=models.CASCADE)
+    owner = models.ForeignKey('Customer', verbose_name='Владелец', null=True, on_delete=models.CASCADE)
     products = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')
     total_products = models.PositiveIntegerField(default=0)
     final_price = models.DecimalField(max_digits=9, default=0, decimal_places=2, verbose_name='Итоговая цена')
@@ -203,12 +207,21 @@ class Cart(models.Model):
     def __str__(self):
         return str(self.id)
 
+    def save(self, *args, **kwargs):
+        cart_data = self.products.aggregate(models.Sum('final_price'), models.Count('id'))
+        if cart_data.get('final_price__sum'):
+            self.final_price = cart_data['final_price__sum']
+        else:
+            self.final_price = 0
+        self.total_products = cart_data['id__count']
+        super().save(*args, **kwargs)
+
 
 class Customer(models.Model):
     # емайл фирст и ласт нейм есть в базовом юзере которого создали выше
     user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
-    phone = models.CharField(max_length=20, verbose_name='Номер телефона')
-    address = models.CharField(max_length=255, verbose_name='Адрес')
+    phone = models.CharField(max_length=20, verbose_name='Номер телефона', null=True, blank=True)
+    address = models.CharField(max_length=255, verbose_name='Адрес', null=True, blank=True)
 
     def __str__(self):
         return 'Покупатель {} {}'.format(self.user.first_name, self.user.last_name)
