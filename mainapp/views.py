@@ -11,7 +11,7 @@ class BaseView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
         categories = Category.objects.get_categories_for_side_bar()
-        products = LatestProducts.objects.get_products_for_main_page('notebook', 'smart')
+        products = LatestProducts.objects.get_products_for_main_page('notebook', 'smartphone')
         context = {
             'categories': categories,
             'products': products,
@@ -44,6 +44,7 @@ class ProductDetailView(CartMixin, CategoryDetailMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['ct_model'] = self.model._meta.model_name
+        context['cart'] = self.cart
         return context
 
 
@@ -54,11 +55,15 @@ class CategoryDetailView(CartMixin, CategoryDetailMixin, DetailView):
     context_object_name = 'category'
     slug_url_kwarg = 'slug'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['cart'] = self.cart
+        return context
 
 # products/noutbuki/macbook-pro-13/
 
 
-class CartView(CartMixin,View):
+class CartView(CartMixin, View):
 
     def get(self, request, *args, **kwargs):
         categories = Category.objects.get_categories_for_side_bar()
@@ -101,6 +106,7 @@ class DeleteFromCartView(CartMixin, View):
         messages.add_message(request, messages.INFO, 'Товар успешно удален из корзины')
         return HttpResponseRedirect('/cart/')
 
+
 class ChangeQtyView(CartMixin, View):
 
     def post(self, request, *args, **kwargs):
@@ -116,4 +122,5 @@ class ChangeQtyView(CartMixin, View):
         self.cart.save()
         messages.add_message(request, messages.INFO, 'Кол-во товара успешно изменено')
         return HttpResponseRedirect('/cart/')
+
 
