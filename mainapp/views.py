@@ -3,9 +3,14 @@ from django.views.generic import DetailView, View
 from django.http import HttpResponseRedirect
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
-from .models import Notebook, Smartphone, Category, LatestProducts, CartProduct
-from .mixins import CategoryDetailMixin, CartMixin
-
+from .models import (Notebook,
+                     Smartphone,
+                     Category,
+                     LatestProducts,
+                     CartProduct)
+from .mixins import (CategoryDetailMixin,
+                     CartMixin)
+from .forms import OrderForm
 
 class BaseView(CartMixin, View):
 
@@ -123,4 +128,17 @@ class ChangeQtyView(CartMixin, View):
         messages.add_message(request, messages.INFO, 'Кол-во товара успешно изменено')
         return HttpResponseRedirect('/cart/')
 
+
+class CheckoutView(CartMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        categories = Category.objects.get_categories_for_side_bar()
+        form = OrderForm(request.POST or None)
+        context = {
+            'cart': self.cart,
+            'categories': categories,
+            'form': form,
+        }
+
+        return render(request, 'mainapp/checkout.html', context=context)
 

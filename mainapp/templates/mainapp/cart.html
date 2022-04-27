@@ -2,7 +2,7 @@
 
 {% block content %}
 
-    <h3>Ваша корзина {% if not cart.products.count %} пуста {% endif %}</h3>
+
 
     {% if messages %}
         {% for message in messages %}
@@ -14,7 +14,8 @@
         {% endfor %}
     {% endif %}
     {% if cart.products.count %}
-    <table class="table ">
+    <table class="table container px-4 px-lg-5 mt-5">
+     <h3 class="text-center">Ваша корзина {% if not cart.products.count %} пуста {% endif %}</h3>
         <thead>
             <tr>
                 <th scope="col">Наименование</th>
@@ -49,6 +50,7 @@
             <td>Итог:</td>
             <td>{{ cart.total_products }}</td>
             <td><strong>{{ cart.final_price }} руб.</strong></td>
+            <td><a href="{% url 'checkout' %}"><button class="btn btn-primary">Перейти к оформлению</button></a></td>
         </tr>
 
         </tbody>

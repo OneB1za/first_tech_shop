@@ -286,7 +286,7 @@ class Order(models.Model):
                                      choices=BUYING_TYPE_CHOICES,
                                      default=BUYING_TYPE_DELIVERY,
                                      verbose_name='Тип доставки')
-    comment = models.CharField(max_length=524, verbose_name='Комментарий к заказу', blank=True, null=True)
+    comment = models.TextField(max_length=524, verbose_name='Комментарий к заказу', blank=True, null=True)
     created_at = models.DateTimeField(auto_now=True, verbose_name='Дата оплаты заказа')
     order_date = models.DateTimeField(verbose_name='Дата получения заказа', default=timezone.now)
 
