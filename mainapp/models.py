@@ -92,6 +92,10 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
 
 class Product(models.Model):
     MIN_RESOLUTION = (450, 300)
@@ -144,6 +148,10 @@ class Notebook(Product):
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
 
+    class Meta:
+        verbose_name = 'Ноутбук'
+        verbose_name_plural = 'Ноутбуки'
+
 
 class Smartphone(Product):
     SIXTEEN = '16'
@@ -177,6 +185,10 @@ class Smartphone(Product):
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
 
+    class Meta:
+        verbose_name = 'Смартфон'
+        verbose_name_plural = 'Смартфоны'
+
 
 class CartProduct(models.Model):
     user = models.ForeignKey('Customer', verbose_name='Покупатель', on_delete=models.CASCADE)
@@ -193,6 +205,10 @@ class CartProduct(models.Model):
     def save(self, *args, **kwargs):
         self.final_price = self.qty * self.content_object.price
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Товар в корзине'
+        verbose_name_plural = 'Товары в корзинах'
 
 
 class Cart(models.Model):
@@ -215,6 +231,10 @@ class Cart(models.Model):
         self.total_products = cart_data['id__count']
         super().save(*args, **kwargs)
 
+    class Meta:
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзины'
+
 
 class Customer(models.Model):
     # емайл фирст и ласт нейм есть в базовом юзере которого создали выше
@@ -225,6 +245,10 @@ class Customer(models.Model):
 
     def __str__(self):
         return 'Покупатель {} {}'.format(self.user.first_name, self.user.last_name)
+
+    class Meta:
+        verbose_name = 'Покупатель'
+        verbose_name_plural = 'Покупатели'
 
 
 class Order(models.Model):
@@ -248,7 +272,8 @@ class Order(models.Model):
         (BUYING_TYPE_DELIVERY, 'Доставка'),
     )
 
-    customer = models.ForeignKey(Customer, verbose_name='Покупатель', related_name='related_orders', on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, verbose_name='Покупатель', related_name='related_orders',
+                                 on_delete=models.CASCADE)
     first_name = models.CharField(max_length=74, verbose_name='Имя')
     last_name = models.CharField(max_length=74, verbose_name='Фамилия')
     phone = models.CharField(max_length=16, verbose_name='Номер телефона')
@@ -267,3 +292,7 @@ class Order(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+    class Meta:
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
