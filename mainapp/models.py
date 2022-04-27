@@ -103,7 +103,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, verbose_name='Категория', on_delete=models.CASCADE)
     title = models.CharField(max_length=255, verbose_name='Наименование')
     slug = models.SlugField(unique=True)
-    image = models.ImageField(verbose_name='Изображение товара')
+    image = models.ImageField(verbose_name='Изображение товара', null=True, blank=True)
     description = models.TextField(verbose_name='Описание', null=True)
     price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Цена')
 
@@ -128,6 +128,7 @@ class Product(models.Model):
     def get_model_name(self):
         return self.__class__.__name__.lower()
 
+
 class Notebook(Product):
     diagonal = models.CharField(max_length=255, verbose_name='Диагональ')
     display = models.CharField(max_length=255, verbose_name='Тип дисплея')
@@ -141,8 +142,6 @@ class Notebook(Product):
 
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
-
-
 
 
 class Smartphone(Product):
@@ -193,7 +192,6 @@ class CartProduct(models.Model):
     def save(self, *args, **kwargs):
         self.final_price = self.qty * self.content_object.price
         super().save(*args, **kwargs)
-
 
 
 class Cart(models.Model):
