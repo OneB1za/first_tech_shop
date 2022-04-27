@@ -4,7 +4,6 @@ from .models import Category, Cart, Customer, Notebook, Smartphone
 
 
 class CategoryDetailMixin(SingleObjectMixin):
-
     CATEGORY_SLUG2PRODUCT_MODEL = {
         'noutbuki': Notebook,
         'smartfony': Smartphone,
@@ -20,6 +19,7 @@ class CategoryDetailMixin(SingleObjectMixin):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.get_categories_for_side_bar()
         return context
+
 
 class CartMixin(View):
 
