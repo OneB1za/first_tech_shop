@@ -1,5 +1,6 @@
+from django.db import transaction
 from django.shortcuts import render
-from django.views.generic import DetailView, View
+from django.views.generic import (DetailView, View)
 from django.http import HttpResponseRedirect
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
@@ -7,10 +8,12 @@ from .models import (Notebook,
                      Smartphone,
                      Category,
                      LatestProducts,
-                     CartProduct)
-from .mixins import (CategoryDetailMixin,
-                     CartMixin)
+                     CartProduct,
+                     Customer, )
+from .mixins import (CategoryDetailMixin, CartMixin)
 from .forms import OrderForm
+from .utils import recalc_cart
+
 
 class BaseView(CartMixin, View):
 
@@ -65,6 +68,7 @@ class CategoryDetailView(CartMixin, CategoryDetailMixin, DetailView):
         context['cart'] = self.cart
         return context
 
+
 # products/noutbuki/macbook-pro-13/
 
 
@@ -91,7 +95,7 @@ class AddToCartView(CartMixin, View):
 
         if created:
             self.cart.products.add(cart_product)
-        self.cart.save()
+        recalc_cart(self.cart)
         messages.add_message(request, messages.INFO, 'Товар успешно добавлен')
         return HttpResponseRedirect('/cart/')
 
@@ -107,7 +111,7 @@ class DeleteFromCartView(CartMixin, View):
         )
         self.cart.products.remove(cart_product)
         cart_product.delete()
-        self.cart.save()
+        recalc_cart(self.cart)
         messages.add_message(request, messages.INFO, 'Товар успешно удален из корзины')
         return HttpResponseRedirect('/cart/')
 
@@ -124,7 +128,7 @@ class ChangeQtyView(CartMixin, View):
         qty = int(request.POST.get('qty'))
         cart_product.qty = qty
         cart_product.save()
-        self.cart.save()
+        recalc_cart(self.cart)
         messages.add_message(request, messages.INFO, 'Кол-во товара успешно изменено')
         return HttpResponseRedirect('/cart/')
 
@@ -141,4 +145,31 @@ class CheckoutView(CartMixin, View):
         }
 
         return render(request, 'mainapp/checkout.html', context=context)
+
+
+class MakeOrderView(CartMixin, View):
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        form = OrderForm(request.POST or None)
+        customer = Customer.objects.get(user=request.user)
+        if form.is_valid():
+            new_order = form.save(commit=False)
+            new_order.customer = customer
+            new_order.first_name = form.cleaned_data['first_name']
+            new_order.last_name = form.cleaned_data['last_name']
+            new_order.address = form.cleaned_data['address']
+            new_order.phone = form.cleaned_data['phone']
+            new_order.delivery_type = form.cleaned_data['delivery_type']
+            new_order.comment = form.cleaned_data['comment']
+            new_order.order_date = form.cleaned_data['order_date']
+            new_order.save()
+            self.cart.in_order = True
+            self.cart.save()
+            new_order.cart = self.cart
+            new_order.save()
+            customer.orders.add(new_order)
+            messages.add_message(request, messages.INFO, 'Спасибо за покупку')
+            return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/checkout/')
 

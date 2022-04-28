@@ -222,14 +222,6 @@ class Cart(models.Model):
     def __str__(self):
         return str(self.id)
 
-    def save(self, *args, **kwargs):
-        cart_data = self.products.aggregate(models.Sum('final_price'), models.Count('id'))
-        if cart_data.get('final_price__sum'):
-            self.final_price = cart_data['final_price__sum']
-        else:
-            self.final_price = 0
-        self.total_products = cart_data['id__count']
-        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Корзина'
@@ -289,6 +281,7 @@ class Order(models.Model):
     comment = models.TextField(max_length=524, verbose_name='Комментарий к заказу', blank=True, null=True)
     created_at = models.DateTimeField(auto_now=True, verbose_name='Дата оплаты заказа')
     order_date = models.DateTimeField(verbose_name='Дата получения заказа', default=timezone.now)
+    cart = models.ForeignKey(Cart, verbose_name='Корзина', blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.id)
